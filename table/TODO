@@ -1,0 +1,9 @@
+- fix type cell size
+- create menuItem model / controller to menuBar
+- add frozen to column settings
+- create row model
+    - add visibility
+    - add frozen
+    - add colorize
+- wire row context menu
+- wire row settings
