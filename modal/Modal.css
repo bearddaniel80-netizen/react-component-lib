@@ -1,29 +1,39 @@
-modal-overlay {
+.modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
+  inset: 0;
+
   width: 100vw;
   height: 100vh;
-  background-color: rgba(0, 0, 0, 0.5); /* Dims the background */
+
+  background-color: rgba(0, 0, 0, 0.5);
+
   display: flex;
   justify-content: center;
   align-items: center;
+
   z-index: 1000;
 }
 
 .modal-content {
   background: white;
+
   padding: 20px;
   border-radius: 8px;
+
   width: 400px;
-  max-width: 90%;
+  max-width: 90vw;
+
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+
+  /* Important for overflow inside flex layouts */
+  min-width: 0;
 }
 
 .modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+
   border-bottom: 1px solid #eee;
   padding-bottom: 10px;
   margin-bottom: 15px;
@@ -37,6 +47,10 @@ modal-overlay {
 }
 
 .modal-body {
-  font-size: 1rem;
-  line-height: 1.5;
+  max-height: 500px;
+  overflow: auto;
+}
+
+.modal-body table {
+  min-width: 800px;
 }
