@@ -1,0 +1,8 @@
+.color-swatch {
+  border: 2px solid black;
+  box-sizing: border-box;
+}
+
+.color-swatch.selected {
+  border-color: #000;
+}

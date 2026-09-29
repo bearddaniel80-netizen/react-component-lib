@@ -6,7 +6,7 @@ function App() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetch("/api/data")
+    fetch("/api/manifest/list")
       .then((response) => {
         if (!response.ok) {
           throw new Error("Request failed");
@@ -36,9 +36,9 @@ function App() {
   return (
     <div>
       <h1>Message</h1>
-        <div>
-          {res.message}
-        </div>
+            {res.result.map((item) => (
+              <div>{item}</div>
+            ))}
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import FileDropZone from "./FileDropZone";
 import Table from "../table/Table";
-import {columnModel} from "../table/column/model/column";
+import {columnAttributes } from "../table/column/model/attribute";
 import { useFileUploads } from "./hooks/useFileUploads";
 import { uploadFile } from "./network/uploadService";
 
@@ -29,7 +29,7 @@ export default function FileUpload() {
       }
     }
   }
-  const columns = columnModel;
+  const columns = columnAttributes;
 
   const uploading = uploads.some(
     (upload) => upload.uploading

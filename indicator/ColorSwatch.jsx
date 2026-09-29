@@ -1,10 +1,12 @@
-export default function ColorSwatch({ color }) {
+export default function ColorSwatch({ color, title }) {
   return (
       <span
+        title={title}
         style={{
-          width: "60px",
-          height: "10px",
-          border: "1px solid #000",
+        display: "inline-block",
+        width: "16px",
+        height: "16px",
+        borderRadius: "3px",
           backgroundColor: color,
         }}
       />
