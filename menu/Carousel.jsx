@@ -1,6 +1,8 @@
 import { useState } from "react";
+import { itemsModel } from "./menuModel";
 import CarouselSubmenu from "./CarouselSubmenu";
 import DynamicTable from "../dynamic-table/DynamicTable";
+import useSubmenuController from "./useSubmenuController";
 import "./Carousel.css";
 
 async function myList(endpoint) {
@@ -13,30 +15,25 @@ async function myList(endpoint) {
   return response.json();
 }
 
-const menuItems = [
-  {
-    id: "manifest",
-    label: "Manifest",
-    endpoint: "/api/manifest/list",
-  },
-  {
-    id: "suite",
-    label: "Suite",
-    endpoint: "/api/suite/list",
-  },
-  {
-    id: "tag",
-    label: "Tag",
-    endpoint: "/api/tag/list",
-  },
-];
-
-export default function CarouselMenu() {
+export default function CarouselMenu({
+  menuItems = itemsModel,
+  mode = "default",
+}) {
   const [activeMenu, setActiveMenu] = useState(null);
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [selectedData, setSelectedData] = useState(null);
+
+  const {
+    selectedData,
+    loading: submenuLoading,
+    error: submenuError,
+    select,
+  } = useSubmenuController({
+    activeMenu,
+    mode,
+  });
+
   async function handleMenuClick(menu) {
     // Close the active menu if clicked again
     if (activeMenu === menu.id) {
@@ -62,25 +59,7 @@ export default function CarouselMenu() {
   const activeItem = menuItems.find(
     (item) => item.id === activeMenu
   );
-  async function handleSubmenuSelect(item) {
-    const endpoint = `/api/${activeMenu}/${item}`;
 
-    setLoading(true);
-    setError(null);
-
-    try {
-      const data = await myList(endpoint);
-
-      console.log("Endpoint response:", data);
-
-      // Store the returned JSON in state
-      setSelectedData(data);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  }
   return (
     <div className="carousel-menu">
 
@@ -111,36 +90,59 @@ export default function CarouselMenu() {
           {!loading && !error && (
             <CarouselSubmenu
               items={items}
-              onSelect={handleSubmenuSelect}
+              onSelect={select}
             />
           )}
         </div>
       )}
+
+      {/* Submenu request */}
+      {submenuLoading && <div>Loading...</div>}
+
+      {submenuError && (
+        <div>Error: {submenuError}</div>
+      )}
+
+      {/* Results */}
       {selectedData && (
         <>
-          <DynamicTable caption={"Summary"} data={
-            {
-              "columns": selectedData.summary_columns,
-              "rows": selectedData.summary
-            }
-          } />
-          {selectedData.failures_columns && (
-          <DynamicTable caption={"Failures"} data={
-            {
-              "columns": selectedData.failures_columns,
-              "rows": selectedData.failures
-            }
-          } />
+          <DynamicTable
+            caption="Summary"
+            data={{
+              columns: selectedData.summary_columns,
+              rows: selectedData.summary,
+            }}
+          />
+
+          {selectedData.query_performance_columns && (
+            <DynamicTable
+              caption="Slowest Query"
+              data={{
+                columns: selectedData.query_performance_columns,
+                rows: selectedData.query_performance,
+              }}
+            />
           )}
-          <DynamicTable caption={"Test Results"} data={
-            {
-              "columns": selectedData.results_columns,
-              "rows": selectedData.results
-            }
-          } />
+
+          {selectedData.failures_columns && (
+            <DynamicTable
+              caption="Failures"
+              data={{
+                columns: selectedData.failures_columns,
+                rows: selectedData.failures,
+              }}
+            />
+          )}
+
+          <DynamicTable
+            caption="Test Results"
+            data={{
+              columns: selectedData.results_columns,
+              rows: selectedData.results,
+            }}
+          />
         </>
       )}
     </div>
   );
 }
-
