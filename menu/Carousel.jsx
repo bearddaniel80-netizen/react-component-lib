@@ -124,12 +124,14 @@ export default function CarouselMenu() {
               "rows": selectedData.summary
             }
           } />
+          {selectedData.failures_columns && (
           <DynamicTable caption={"Failures"} data={
             {
               "columns": selectedData.failures_columns,
               "rows": selectedData.failures
             }
           } />
+          )}
           <DynamicTable caption={"Test Results"} data={
             {
               "columns": selectedData.results_columns,
