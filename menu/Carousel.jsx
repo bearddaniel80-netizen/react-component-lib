@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { itemsModel } from "./menuModel";
 import CarouselSubmenu from "./CarouselSubmenu";
-import DynamicTable from "../dynamic-table/DynamicTable";
 import useSubmenuController from "./useSubmenuController";
+import DataRenderer from "./DataRenderer";
 import "./Carousel.css";
 
 async function myList(endpoint) {
@@ -18,6 +18,8 @@ async function myList(endpoint) {
 export default function CarouselMenu({
   menuItems = itemsModel,
   mode = "default",
+  component: Renderer,
+  model = {},
 }) {
   const [activeMenu, setActiveMenu] = useState(null);
   const [items, setItems] = useState([]);
@@ -35,7 +37,6 @@ export default function CarouselMenu({
   });
 
   async function handleMenuClick(menu) {
-    // Close the active menu if clicked again
     if (activeMenu === menu.id) {
       setActiveMenu(null);
       return;
@@ -62,8 +63,6 @@ export default function CarouselMenu({
 
   return (
     <div className="carousel-menu">
-
-      {/* Main menu */}
       <div className="carousel-menu__main">
         {menuItems.map((item) => (
           <button
@@ -80,11 +79,9 @@ export default function CarouselMenu({
         ))}
       </div>
 
-      {/* Horizontal submenu */}
       {activeItem && (
         <div>
           {loading && <div>Loading...</div>}
-
           {error && <div>Error: {error}</div>}
 
           {!loading && !error && (
@@ -96,52 +93,18 @@ export default function CarouselMenu({
         </div>
       )}
 
-      {/* Submenu request */}
       {submenuLoading && <div>Loading...</div>}
 
       {submenuError && (
         <div>Error: {submenuError}</div>
       )}
 
-      {/* Results */}
-      {selectedData && (
-        <>
-          <DynamicTable
-            caption="Summary"
-            data={{
-              columns: selectedData.summary_columns,
-              rows: selectedData.summary,
-            }}
-          />
-
-          {selectedData.query_performance_columns && (
-            <DynamicTable
-              caption="Slowest Query"
-              data={{
-                columns: selectedData.query_performance_columns,
-                rows: selectedData.query_performance,
-              }}
-            />
-          )}
-
-          {selectedData.failures_columns && (
-            <DynamicTable
-              caption="Failures"
-              data={{
-                columns: selectedData.failures_columns,
-                rows: selectedData.failures,
-              }}
-            />
-          )}
-
-          <DynamicTable
-            caption="Test Results"
-            data={{
-              columns: selectedData.results_columns,
-              rows: selectedData.results,
-            }}
-          />
-        </>
+      {selectedData && Renderer && (
+        <DataRenderer
+          component={Renderer}
+          model={model}
+          data={selectedData}
+        />
       )}
     </div>
   );
