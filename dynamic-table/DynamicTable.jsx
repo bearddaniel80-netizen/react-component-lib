@@ -1,5 +1,8 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import Modal from "../modal/Modal";
+
+const ROWS_PER_PAGE = 15;
 
 export default function DynamicTable({ caption, data }) {
   const { columns, rows } = data;
@@ -8,6 +11,23 @@ export default function DynamicTable({ caption, data }) {
 
   const [selectedValue, setSelectedValue] = useState(null);
   const [modalTitle, setModalTitle] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const totalPages = Math.ceil(tableRows.length / ROWS_PER_PAGE);
+
+  // Keep current page valid if the data changes
+  useEffect(() => {
+    setCurrentPage((page) =>
+      Math.min(Math.max(page, 1), Math.max(totalPages, 1))
+    );
+  }, [totalPages]);
+
+  // Calculate rows for current page
+  const startIndex = (currentPage - 1) * ROWS_PER_PAGE;
+  const paginatedRows = tableRows.slice(
+    startIndex,
+    startIndex + ROWS_PER_PAGE
+  );
 
   const formatValue = (value, type) => {
     if (value == null) return "";
@@ -40,7 +60,6 @@ export default function DynamicTable({ caption, data }) {
   const renderCell = (value, column) => {
     const formatted = formatValue(value, column.type);
 
-    // Don't truncate dates, booleans, or numbers
     const isText =
       column.type !== "date" &&
       column.type !== "boolean" &&
@@ -54,11 +73,7 @@ export default function DynamicTable({ caption, data }) {
             href="#"
             onClick={(e) => {
               e.preventDefault();
-
-              openModal(
-                formatted,
-                column.label ?? column.key
-              );
+              openModal(formatted, column.label ?? column.key);
             }}
           >
             ...
@@ -86,20 +101,43 @@ export default function DynamicTable({ caption, data }) {
         </thead>
 
         <tbody>
-          {tableRows.map((row, rowIndex) => (
-            <tr key={row.id ?? rowIndex}>
+          {paginatedRows.map((row, rowIndex) => (
+            <tr key={row.id ?? startIndex + rowIndex}>
               {columns.map((column) => (
                 <td key={column.key}>
-                  {renderCell(
-                    row[column.key],
-                    column
-                  )}
+                  {renderCell(row[column.key], column)}
                 </td>
               ))}
             </tr>
           ))}
         </tbody>
       </table>
+
+      {/* Pagination controls */}
+      <div className="pagination">
+        <button
+          onClick={() => setCurrentPage((p) => p - 1)}
+          disabled={currentPage === 1}
+        >
+          Previous
+        </button>
+
+        <span>
+          Page {currentPage} of {Math.max(totalPages, 1)}
+          {" | "}
+          Showing {tableRows.length === 0 ? 0 : startIndex + 1}-
+          {Math.min(startIndex + ROWS_PER_PAGE, tableRows.length)}
+          {" of "}
+          {tableRows.length} rows
+        </span>
+
+        <button
+          onClick={() => setCurrentPage((p) => p + 1)}
+          disabled={currentPage >= totalPages}
+        >
+          Next
+        </button>
+      </div>
 
       <Modal
         isOpen={selectedValue !== null}
@@ -113,9 +151,10 @@ export default function DynamicTable({ caption, data }) {
     </>
   );
 }
+
 const fullCellValueStyle = {
   whiteSpace: "pre-wrap",
   overflowWrap: "anywhere",
   maxHeight: "60vh",
   overflowY: "auto"
-}
+};

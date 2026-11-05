@@ -1,0 +1,92 @@
+.wizard {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.wizard-query pre {
+  background: #f4f4f4;
+  padding: 12px;
+  border-radius: 5px;
+  min-height: 45px;
+  white-space: pre-wrap;
+}
+
+.wizard-progress {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.wizard-progress progress {
+  flex: 1;
+  height: 12px;
+}
+
+.wizard-zones {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.wizard-drag-zone,
+.wizard-drop-zone {
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 12px;
+  min-height: 180px;
+}
+
+.wizard-drag-zone > div {
+  margin-bottom: 8px;
+}
+
+.drop-area {
+  min-height: 120px;
+  border: 2px dashed #aaa;
+  border-radius: 5px;
+  padding: 10px;
+}
+
+.dropped-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 8px;
+  margin-bottom: 5px;
+  background: #e9f0f8;
+  border-radius: 4px;
+}
+
+.dropped-item button {
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  font-size: 18px;
+}
+
+.drop-placeholder {
+  color: #999;
+}
+
+.wizard-error {
+  color: #c00;
+}
+
+.wizard-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.wizard-actions button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+@media (max-width: 600px) {
+  .wizard-zones {
+    grid-template-columns: 1fr;
+  }
+}

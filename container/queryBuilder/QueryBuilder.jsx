@@ -1,11 +1,18 @@
-
 import { useState, useRef, useEffect } from "react";
+import ColorSwatch from "../../indicator/color/ColorSwatch";
 import QueryResultsView from "../../views/QueryResultsView";
 import Modal from "../../modal/Modal";
+import QueryBuilderWizard from "./wizard/QueryBuilderWizard";
 import "./QueryBuilder.css";
 
 const POLL_INTERVAL = 2000;
 const MAX_EXECUTION_TIME = 5 * 60 * 1000;
+const STATUS_COLORS = {
+  completed: "green",
+  failed: "red",
+  cancelled: "yellow",
+  running: "#999",
+};
 
 export default function QueryBuilder() {
   const [query, setQuery] = useState("");
@@ -13,7 +20,7 @@ export default function QueryBuilder() {
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState("");
   const [error, setError] = useState("");
-
+  const [wizardOpen, setWizardOpen] = useState(false);
   const [history, setHistory] = useState([]);
   const [selectedQuery, setSelectedQuery] = useState(null);
 
@@ -22,7 +29,6 @@ export default function QueryBuilder() {
   useEffect(() => {
     return () => controllerRef.current?.abort();
   }, []);
-
   const delay = (ms, signal) => {
     return new Promise((resolve, reject) => {
       if (signal.aborted) {
@@ -44,6 +50,13 @@ export default function QueryBuilder() {
     });
   };
 
+  const updateHistoryStatus = (id, status) => {
+    setHistory(prev =>
+      prev.map(item =>
+        item.id === id ? { ...item, status } : item
+      )
+    );
+  };
   const runQuery = async () => {
     if (!query.trim() || loading) return;
 
@@ -54,7 +67,7 @@ export default function QueryBuilder() {
 
     const { signal } = controller;
     const submittedQuery = query;
-    
+
     setLoading(true);
     setError("");
     setResults(null);
@@ -65,6 +78,7 @@ export default function QueryBuilder() {
       id: crypto.randomUUID(),
       timestamp: new Date().toISOString(),
       query: submittedQuery,
+      status: "running"
     };
 
     setHistory(prev => [historyItem, ...prev]);
@@ -91,7 +105,7 @@ export default function QueryBuilder() {
       }
 
       setStatus(`Query submitted: ${job.jobId}`);
-      
+
       while (true) {
         if (Date.now() - startTime > MAX_EXECUTION_TIME) {
           throw new Error("Query execution timed out");
@@ -116,6 +130,8 @@ export default function QueryBuilder() {
             results: data.results ?? [],
           });
 
+          updateHistoryStatus(historyItem.id, "completed");
+
           setStatus("Query completed successfully.");
           break;
         }
@@ -132,7 +148,10 @@ export default function QueryBuilder() {
       }
 
     } catch (err) {
-      if (err.name !== "AbortError") {
+      if (err.name === "AbortError") {
+        updateHistoryStatus(historyItem.id, "cancelled");
+      } else {
+        updateHistoryStatus(historyItem.id, "failed");
         setError(err.message);
         setStatus("Query failed.");
       }
@@ -180,8 +199,15 @@ export default function QueryBuilder() {
           rows={6}
           disabled={loading}
         />
-
         <div className="query-actions">
+
+          <button
+            type="button"
+            onClick={() => setWizardOpen(true)}
+            disabled={loading}
+          >
+            Wizard
+          </button>
           <button
             onClick={runQuery}
             disabled={loading || !query.trim()}
@@ -189,14 +215,14 @@ export default function QueryBuilder() {
             {loading ? "Running..." : "Run Query"}
           </button>
 
-          {loading && (
-            <button
-              className="cancel-button"
-              onClick={cancelQuery}
-            >
-              Cancel
-            </button>
-          )}
+          <button
+            type="button"
+            className="cancel-button"
+            onClick={cancelQuery}
+            disabled={!loading}
+          >
+            Cancel
+          </button>
         </div>
       </div>
 
@@ -213,11 +239,35 @@ export default function QueryBuilder() {
       <div className="query-history">
         <h3>Query History</h3>
 
+        {/* Status Legend */}
+        <div className="status-legend">
+          <span>
+            <ColorSwatch color="green" title="Successful" />
+            Successful
+          </span>
+
+          <span>
+            <ColorSwatch color="red" title="Failed" />
+            Failed
+          </span>
+
+          <span>
+            <ColorSwatch color="yellow" title="Cancelled" />
+            Cancelled
+          </span>
+
+          <span>
+            <ColorSwatch color="#999" title="Running" />
+            Running
+          </span>
+        </div>
+
         <table>
           <thead>
             <tr>
               <th>Timestamp</th>
               <th>Query</th>
+              <th>Status</th>
             </tr>
           </thead>
 
@@ -244,12 +294,19 @@ export default function QueryBuilder() {
                     {abbreviateQuery(item.query)}
                   </a>
                 </td>
+
+                <td>
+                  <ColorSwatch
+                    color={STATUS_COLORS[item.status] || "#999"}
+                    title={item.status}
+                  />
+                </td>
               </tr>
             ))}
 
             {history.length === 0 && (
               <tr>
-                <td colSpan={2}>
+                <td colSpan={3}>
                   No query history available.
                 </td>
               </tr>
@@ -275,7 +332,13 @@ export default function QueryBuilder() {
           {selectedQuery}
         </pre>
       </Modal>
-
+      <QueryBuilderWizard
+        isOpen={wizardOpen}
+        onClose={() => setWizardOpen(false)}
+        onFinish={(generatedQuery) => {
+          setQuery(generatedQuery);
+        }}
+      />
     </div>
   );
 }

@@ -71,16 +71,33 @@
   margin-bottom: 12px;
 }
 
+.status-legend {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 12px;
+  font-size: 13px;
+}
+
+.status-legend span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .query-history table {
   width: 100%;
   border-collapse: collapse;
 }
 
-.query-history th,
+.query-history th:last-child,
+.query-history td:last-child {
+  text-align: center;
+  width: 90px;
+}
+
 .query-history td {
-  padding: 10px;
-  text-align: left;
-  border: 1px solid #ddd;
+  vertical-align: middle;
 }
 
 .query-history th {
@@ -111,4 +128,25 @@
   overflow-y: auto;
   font-family: monospace;
   font-size: 13px;
+}
+.query-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.cancel-button {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.cancel-button:disabled {
+  background-color: #ccc;
+  color: #666;
+  cursor: not-allowed;
+  opacity: 0.7;
 }
