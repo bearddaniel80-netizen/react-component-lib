@@ -7,8 +7,7 @@ async function myList(endpoint) {
   if (!response.ok) {
     throw new Error("Request failed");
   }
-
-  return response.json();
+  return response.text();
 }
 
 export default function useSubmenuController({
